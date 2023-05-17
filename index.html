@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Fairfield Public Library</title>
+
+  <!-- link to Montserrat font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
+  <!-- leaflet css -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+  <link rel="stylesheet" href="src/leaflet.groupedlayercontrol.css" />
+
+  <!-- custom style here -->
+  <style type="text/css">
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Set map parameters */
+    #map {
+      position: fixed;
+      bottom: 0px;
+      width: 100%;
+      top: 52px;
+    }
+
+    header {
+      position: fixed;
+      top: 0px;
+      width: 100%;
+      height: 52px;
+      background-color: #000000;
+      box-shadow: 0px 0px 5px black;
+      z-index: 800;
+    }
+
+    h1 {
+      color: white;
+      font-size: 16px;
+      display: inline-block;
+      margin-top: 0.5em;
+      margin-bottom: 0.0em;
+      margin-left: 0.8em;
+      margin-right: 0;
+      font-weight: normal;
+      font-family: "Montserrat";
+    }
+
+    h2 {
+      font-size: 12px;
+      color: white;
+      display: inline-block;
+      margin-top: 0.25em;
+      margin-bottom: 0.0em;
+      margin-left: 1.0em;
+      margin-right: 0;
+      font-weight: normal;
+      font-family: "Montserrat";
+    }
+
+    h4 {
+      font-size: 16px;
+      margin: 4px;
+    }
+
+    h5 {
+      font-size: 13px;
+      margin: 4px;
+    }
+/*
+    .legend,
+    .caseLegend {
+      padding: 6px 8px;
+      font-size: 1em;
+      background: rgba(75, 75, 75, 0.8);
+      color: whitesmoke;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      width: auto !important;
+      white-space: nowrap;
+    }
+
+    .legend .square {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+    }
+
+    .legend .square.present {
+      background-color: rgba(135, 206, 235, 0.5);
+    }
+
+    .legend .square.not-present {
+      background-color: rgba(211, 211, 211, 0.5);
+    }
+*/
+  </style>
+
+</head>
+
+<body>
+
+  <header>
+    <h1>Annual Public Reading Needs Met by the Fairfield Public Library</h1><br>
+    <h2>Alecs Schmidt Mickunas, MLIS, Fairfield Public Library Director, Fairfield, Iowa</h2>
+  </header>
+
+  <!-- map -->
+  <div id="map"></div>
+
+  <!-- leaflet js -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+  <!-- d3js -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <!-- chroma -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.2.1/chroma.min.js"></script>
+  <script src="src/leaflet.groupedlayercontrol.js"></script>
+
+  <!-- javascript below -->
+  <script>
+    // initialize the map
+    const map = L.map('map');
+
+    // add a basemap
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 15,
+      minZoom: 7
+    }).addTo(map);
+
+    // Add a scale bar
+    L.control.scale({
+      position: 'bottomleft'
+    }).addTo(map);
+
+    // Load the data asynchronously
+    d3.queue()
+      .defer(d3.json, 'data/jefferson-co.geojson') //the Jefferson County geojson file
+      .defer(d3.json, 'data/state-precincts-jefferson-co.geojson') //the state precincts in Jefferson County
+      .await(drawMap); //load the layers after the map loads
+
+    // Provide instructions for making the map
+    function drawMap(err, jeffco, precs) {
+
+      // create Leaflet object with geometry data and add to map
+      const jeffersonCounty = L.geoJson(jeffco, {
+        style: function(feature) {
+            return {
+              color: 'black',
+              weight: 1,
+              fillOpacity: 0,
+              fillColor: 'rgb(0,0,0)'
+            };
+        }
+      }).addTo(map);
+
+      // create Leaflet object with geometry data and add to map
+      const statePrecincts = L.geoJson(precs, {
+        style: function(feature) {
+            return {
+              color: 'black',
+              weight: 0.5,
+              fillOpacity: 0,
+              fillColor: 'rgb(0,0,0)'
+            };
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>PRECINCT: '+props.DISTRICT+'</b>', {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            e.target.setStyle({
+              weight: 1
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            e.target.setStyle({
+              weight: 0.5
+            });
+          });
+        }
+      }).addTo(map);
+
+      // first set the zoom/center to the dataLayer's extent
+      map.fitBounds(jeffersonCounty.getBounds());
+
+      // Create an object with the overlay layers
+      const groupedOverlays = {
+        'Boundaries': {
+          'Jefferson County': jeffersonCounty,
+          'State Precincts': statePrecincts
+        },
+/*
+        'Counties': {
+          'Iowa Counties': iowaCounties
+        }
+*/
+      };
+
+
+      // Add the layer control to the map
+      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false/*, exclusiveGroups: ["Counties"]*/ }).addTo(map);
+
+      // Event listener for the overlayadd event
+      map.on('overlayadd', function (eventLayer) {
+        if (eventLayer.layer === jeffersonCounty) {
+          jeffersonCounty.bringToBack();
+        }
+      });
+
+    } // end drawMap function
+
+  </script>
+
+</body>
+
+</html>
