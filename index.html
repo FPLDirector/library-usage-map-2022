@@ -148,10 +148,11 @@
     d3.queue()
       .defer(d3.json, 'data/jefferson-co.geojson') //the Jefferson County geojson file
       .defer(d3.json, 'data/state-precincts-jefferson-co.geojson') //the state precincts in Jefferson County
+      .defer(d3.json, 'data/user-data.geojson') //the library borrowing data
       .await(drawMap); //load the layers after the map loads
 
     // Provide instructions for making the map
-    function drawMap(err, jeffco, precs) {
+    function drawMap(err, jeffco, precs, usr) {
 
       // create Leaflet object with geometry data and add to map
       const jeffersonCounty = L.geoJson(jeffco, {
@@ -195,6 +196,42 @@
         }
       }).addTo(map);
 
+      // create Leaflet object with geometry data and add to map
+      const userData = L.geoJson(usr, {
+        pointToLayer: function(feature, latlng) { // using pointToLayer...
+          return L.circleMarker(latlng, {
+            fillColor: '#ffae42', // set the fill color
+            color: 'black', // set the border color
+            opacity: 0.5, // set the opacity of the border
+            weight: 1, // set the weight of the border
+            fillOpacity: 0.8, // set the opacity of the fill color
+            radius: Math.sqrt(feature.properties.Books / Math.PI) * 2 // set the radii of the circles
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>'+props.Address+'</b><br>Books Borrowed: '+props.Books, {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.5,
+              color: 'yellow'
+            });
+          });
+
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.8,
+              color: 'black'
+            });
+          });
+
+        }
+      }).addTo(map);
+
       // first set the zoom/center to the dataLayer's extent
       map.fitBounds(jeffersonCounty.getBounds());
 
@@ -219,6 +256,8 @@
       map.on('overlayadd', function (eventLayer) {
         if (eventLayer.layer === jeffersonCounty) {
           jeffersonCounty.bringToBack();
+        } if (eventLayer.layer === statePrecincts) {
+          statePrecincts.bringToBack();
         }
       });
 
