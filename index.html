@@ -75,26 +75,35 @@
       font-size: 13px;
       margin: 4px;
     }
-/*
-    .legend,
-    .caseLegend {
+
+    .legend, .blegend {
       padding: 6px 8px;
       font-size: 1em;
-      background: rgba(75, 75, 75, 0.8);
-      color: whitesmoke;
+      background: rgba(217, 217, 217, 0.8);
+      color: rgb(0, 0, 0);
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
       border-radius: 5px;
       width: auto !important;
       white-space: nowrap;
     }
 
-    .legend .square {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin-right: 5px;
+    .legend ul, .blegend ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 12px 4px 0;
     }
 
+    .legend li, .blegend li {
+      height: 22px;
+    }
+
+    .legend span, .blegend span {
+      width: 30px;
+      height: 20px;
+      float: left;
+      margin-right: 10px;
+    }
+/*
     .legend .square.present {
       background-color: rgba(135, 206, 235, 0.5);
     }
@@ -144,6 +153,46 @@
     L.control.scale({
       position: 'bottomleft'
     }).addTo(map);
+
+    // Create a legend control
+    const legendControl = L.control({ position: 'bottomright' });
+    // Create another legend control for the borrowing percentage 
+    const borrowLegend = L.control({ position: 'bottomright' });
+    
+    // Create a legend div within the legend control
+    legendControl.onAdd = function (map) {
+      const legend = L.DomUtil.create('div', 'legend');
+      return legend;
+    };
+    // Create a blegend div within the legend control
+    borrowLegend.onAdd = function (map) {
+      const blegend = L.DomUtil.create('div', 'blegend');
+      return blegend;
+    };
+
+
+    // Add the legend controls to the map
+    legendControl.addTo(map);
+    borrowLegend.addTo(map);
+    // Hide the legend controls
+    $('.legend').hide();
+    $('.blegend').hide();    
+
+    // select the newly created legend, select and populate the heading,
+    // creating an unordered list for the class ranges and store as reference to variable
+    const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>"+
+                                     "<li><span style='background: #bd0026'></span> 7.39 &mdash; 9.03</li>"+
+                                     "<li><span style='background: #f03b20'></span> 3.94 &mdash; 7.38</li>"+
+                                     "<li><span style='background: #fd8d3c'></span> 1.56 &mdash; 3.93</li>"+
+                                     "<li><span style='background: #fecc5c'></span> 1.01 &mdash; 1.55</li>"+
+                                     "<li><span style='background: #ffffb2'></span> 0.00 &mdash; 1.00</li>");
+    
+    const blegend = $('.blegend').html("<h4>Percent of Population<br>Borrowing Books</h4><ul>"+
+                                     "<li><span style='background: #bd0026'></span> 19% &mdash; 24%</li>"+
+                                     "<li><span style='background: #f03b20'></span> 16% &mdash; 19%</li>"+
+                                     "<li><span style='background: #fd8d3c'></span> 7% &mdash; 15%</li>"+
+                                     "<li><span style='background: #fecc5c'></span> 5% &mdash; 6%</li>"+
+                                     "<li><span style='background: #ffffb2'></span> 0% &mdash; 4%</li>");
 
     // Define an empty layer so that you can turn off precinct stats
     const emptyLayer = L.layerGroup().addTo(map);
@@ -355,10 +404,17 @@
           towns.bringToBack();
           precinctBorrowers.bringToBack();
           jeffersonCounty.bringToBack();
+          $('.legend').hide(); // hide the legend control
+          $('.blegend').show(); // show this legend control
         } if (eventLayer.layer === precinctBooks) {
           towns.bringToBack();          
           precinctBooks.bringToBack();
           jeffersonCounty.bringToBack();
+          $('.legend').show(); // show the legend control
+          $('.blegend').hide(); // hide this legend control
+        } if (eventLayer.layer === emptyLayer) {
+          $('.legend').hide(); // hide the legend control
+          $('.blegend').hide(); // hide this legend control
         } if (eventLayer.layer === jeffersonCounty) {
           towns.bringToBack();          
           precinctBorrowers.bringToBack();
