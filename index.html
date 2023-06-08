@@ -32,6 +32,7 @@
     }
 
     header {
+      background-image: url('img/bookshelf.jpeg');
       position: fixed;
       top: 0px;
       width: 100%;
@@ -42,26 +43,26 @@
     }
 
     h1 {
-      color: white;
+      color: black;
       font-size: 16px;
       display: inline-block;
       margin-top: 0.5em;
       margin-bottom: 0.0em;
       margin-left: 0.8em;
       margin-right: 0;
-      font-weight: normal;
+      font-weight: bold;
       font-family: "Montserrat";
     }
 
     h2 {
       font-size: 12px;
-      color: white;
+      color: black;
       display: inline-block;
       margin-top: 0.25em;
       margin-bottom: 0.0em;
       margin-left: 1.0em;
       margin-right: 0;
-      font-weight: normal;
+      font-weight: bold;
       font-family: "Montserrat";
     }
 
@@ -144,15 +145,19 @@
       position: 'bottomleft'
     }).addTo(map);
 
+    // Define an empty layer so that you can turn off precinct stats
+    const emptyLayer = L.layerGroup().addTo(map);
+
     // Load the data asynchronously
     d3.queue()
       .defer(d3.json, 'data/jefferson-co.geojson') //the Jefferson County geojson file
-      .defer(d3.json, 'data/state-precincts-jefferson-co.geojson') //the state precincts in Jefferson County
+      .defer(d3.json, 'data/cities.geojson') //city and town boundaries for Jefferson County
+      .defer(d3.json, 'data/precinct-stats.geojson') //the state precincts in Jefferson County
       .defer(d3.json, 'data/user-data.geojson') //the library borrowing data
       .await(drawMap); //load the layers after the map loads
 
     // Provide instructions for making the map
-    function drawMap(err, jeffco, precs, usr) {
+    function drawMap(err, jeffco, cty, precs, usr) {
 
       // create Leaflet object with geometry data and add to map
       const jeffersonCounty = L.geoJson(jeffco, {
@@ -163,24 +168,82 @@
               fillOpacity: 0,
               fillColor: 'rgb(0,0,0)'
             };
+        },
+
+        onEachFeature: function(feature, layer) {
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>Jefferson County</b>', {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              weight: 1.5,
+              color: 'yellow'
+            });
+          });
+
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              weight: 1,
+              color: 'black'
+            });
+          });
+
         }
+
       }).addTo(map);
 
       // create Leaflet object with geometry data and add to map
-      const statePrecincts = L.geoJson(precs, {
+      const towns = L.geoJson(cty, {
         style: function(feature) {
-            return {
-              color: 'black',
-              weight: 0.5,
-              fillOpacity: 0,
-              fillColor: 'rgb(0,0,0)'
-            };
+          return {
+            color: 'black',
+            weight: 0.75,
+            fillOpacity: 0,
+            fillColor: 'rgb(0,0,0)'
+          };
+        },
+
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>'+props.CITY_NAME+'</b>', {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              weight: 1,
+              color: 'yellow'
+            });
+          });
+
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              weight: 0.75,
+              color: 'black'
+            });
+          });
+
+        }
+
+      }).addTo(map);        
+
+      // create Leaflet object with geometry data and add to map
+      const precinctBorrowers = L.geoJson(precs, {
+        style: function(feature) {
+          return {
+            color: 'black',
+            weight: 0.5,
+            fillOpacity: 0.5,
+            fillColor: borrowersColor(feature.properties.borrowers_percap)
+          };
         },
         onEachFeature: function(feature, layer) {
           // define the layer properties
           const props = layer.feature.properties;
           // bind a tooltip to the layer
-          layer.bindTooltip('<b>PRECINCT: '+props.DISTRICT+'</b>', {sticky: true});
+          layer.bindTooltip('<b>PRECINCT: '+props.DISTRICT+'</b><br>'+props.borrowers_percap*100+'% of Population are Borrowers', {sticky: true});
           //define what happens on mouseover
           layer.on("mouseover", function(e) {
             e.target.setStyle({
@@ -194,13 +257,43 @@
             });
           });
         }
-      }).addTo(map);
+      });
+
+      // create Leaflet object with geometry data and add to map
+      const precinctBooks = L.geoJson(precs, {
+        style: function(feature) {
+          return {
+            color: 'black',
+            weight: 0.5,
+            fillOpacity: 0.5,
+            fillColor: booksColor(feature.properties.books_percap)
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>PRECINCT: '+props.DISTRICT+'</b><br>'+props.books_percap+' Books Borrowed Per Person', {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            e.target.setStyle({
+              weight: 1.5
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            e.target.setStyle({
+              weight: 0.5
+            });
+          });
+        }
+      });      
 
       // create Leaflet object with geometry data and add to map
       const userData = L.geoJson(usr, {
         pointToLayer: function(feature, latlng) { // using pointToLayer...
           return L.circleMarker(latlng, {
-            fillColor: '#ffae42', // set the fill color
+            fillColor: '#698DAD', // set the fill color
             color: 'black', // set the border color
             opacity: 0.5, // set the opacity of the border
             weight: 1, // set the weight of the border
@@ -230,38 +323,76 @@
           });
 
         }
-      }).addTo(map);
+      }).addTo(map);    
 
       // first set the zoom/center to the dataLayer's extent
       map.fitBounds(jeffersonCounty.getBounds());
 
       // Create an object with the overlay layers
       const groupedOverlays = {
-        'Boundaries': {
-          'Jefferson County': jeffersonCounty,
-          'State Precincts': statePrecincts
+        "Each Borrower": {
+          "Books Borrowed": userData
         },
-/*
-        'Counties': {
-          'Iowa Counties': iowaCounties
+        "Jurisdictions": {
+          "Jefferson County": jeffersonCounty,
+          "Cities and Towns": towns
+        },        
+        "Borrowing Rates by Precinct": {
+          "Per Capita Books Borrowed": precinctBooks,
+          "Percent Borrowers": precinctBorrowers,
+          "Turn Off": emptyLayer
         }
-*/
-      };
+      };      
 
 
       // Add the layer control to the map
-      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false/*, exclusiveGroups: ["Counties"]*/ }).addTo(map);
+      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Borrowing Rates by Precinct"] }).addTo(map);
 
       // Event listener for the overlayadd event
       map.on('overlayadd', function (eventLayer) {
-        if (eventLayer.layer === jeffersonCounty) {
+        // Ensure layer order is maintained
+        if (eventLayer.layer === precinctBorrowers) {
+          towns.bringToBack();
+          precinctBorrowers.bringToBack();
           jeffersonCounty.bringToBack();
-        } if (eventLayer.layer === statePrecincts) {
-          statePrecincts.bringToBack();
+        } if (eventLayer.layer === precinctBooks) {
+          towns.bringToBack();          
+          precinctBooks.bringToBack();
+          jeffersonCounty.bringToBack();
+        } if (eventLayer.layer === jeffersonCounty) {
+          towns.bringToBack();          
+          precinctBorrowers.bringToBack();
+          precinctBooks.bringToBack();
+          jeffersonCounty.bringToBack();
+        } if (eventLayer.layer === towns) {
+          towns.bringToBack();          
+          precinctBorrowers.bringToBack();
+          precinctBooks.bringToBack();          
+          jeffersonCounty.bringToBack();
         }
       });
 
-    } // end drawMap function
+    }; // end drawMap function
+
+    // Add a function to style the preincts by percentage of borrowers
+    function borrowersColor(d) {
+      return d > 0.19 ? '#bd0026' :
+        d > 0.15 ? '#f03b20' :
+        d > 0.06 ? '#fd8d3c' :
+        d > 0.04 ? '#fecc5c' :
+        d > 0.00 ? '#ffffb2' :
+        'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
+    };
+
+    // Add a function to style the preincts by books borrowed per person
+    function booksColor(d) {
+      return d > 7.38 ? '#bd0026' :
+        d > 3.93 ? '#f03b20' :
+        d > 1.55 ? '#fd8d3c' :
+        d > 1.00 ? '#fecc5c' :
+        d > 0.00 ? '#ffffb2' :
+        'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
+    };    
 
   </script>
 
