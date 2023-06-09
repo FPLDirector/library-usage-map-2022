@@ -76,7 +76,7 @@
       margin: 4px;
     }
 
-    .legend, .blegend {
+    .legend, .blegend, .clegend {
       padding: 6px 8px;
       font-size: 1em;
       background: rgba(217, 217, 217, 0.8);
@@ -103,6 +103,23 @@
       float: left;
       margin-right: 10px;
     }
+
+    .symbolsContainer {
+    	float: left;
+		  margin-left: 50px;
+    }
+
+    .legendCircle {
+      border-radius:50%; 
+      border: 1px solid rgba(0, 0, 0, 0.5); 
+      background: rgba(105, 141, 173, 0.8);
+      display: inline-block;
+    }
+    
+    .legendValue {
+      position: absolute;
+      right: 8px;
+    }    
 /*
     .legend .square.present {
       background-color: rgba(135, 206, 235, 0.5);
@@ -158,41 +175,100 @@
     const legendControl = L.control({ position: 'bottomright' });
     // Create another legend control for the borrowing percentage 
     const borrowLegend = L.control({ position: 'bottomright' });
+    // Create another legend control for the proportional circles 
+    const circleLegend = L.control({ position: 'bottomright' });    
     
     // Create a legend div within the legend control
     legendControl.onAdd = function (map) {
       const legend = L.DomUtil.create('div', 'legend');
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(legend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });       
       return legend;
     };
     // Create a blegend div within the legend control
     borrowLegend.onAdd = function (map) {
       const blegend = L.DomUtil.create('div', 'blegend');
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(blegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });       
       return blegend;
     };
-
+    // Add content to the circleLegend
+    circleLegend.onAdd = function (map) {
+      // Create a clegend div within the legend control 
+      const clegend = L.DomUtil.create('div', 'clegend');
+      // Create a symbolsContainer div within the legend control
+      const symbolsContainer = L.DomUtil.create('div', 'symbolsContainer');
+      // Define the low, middle, and high values for books borrowed per user
+      const classes = [10, 509, 1028];
+      // Define some flexible values
+      let legendCircle;
+      let lastRadius = 0;
+      let currentRadius;
+      let margin;
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(clegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });      
+      // Give the legend a title
+      $(clegend).append("<h4>Books Borrowed<br>Per User</h4>");		
+      // Iterate through the three class values 
+      for (var i = 0; i <= classes.length-1; i++) {  
+        // Create a circle for each
+  			legendCircle = L.DomUtil.create('div', 'legendCircle');  
+        // Define each circle's radius
+  			currentRadius = Math.sqrt(classes[i] / Math.PI) * 2;
+        // Define the margins
+        margin = -currentRadius - lastRadius - 2;
+        // Set the styles for the circles
+        $(legendCircle).attr("style", "width: " + currentRadius * 2 + 
+  				                   "px; height: " + currentRadius * 2 + 
+  				                   "px; margin-left: " + margin + "px" );		
+        // Append the values to the circles
+  			$(legendCircle).append("<span class='legendValue'>" + classes[i] + "</span>");
+        // Append the circles to the symbolsContainer of the legend
+  			$(symbolsContainer).append(legendCircle);
+        // Define the last radii
+  			lastRadius = currentRadius;
+    	}
+      // Append the symbolsContainer to the legend
+      $(clegend).append(symbolsContainer);
+      // Return the legend
+      return clegend;
+    };
 
     // Add the legend controls to the map
     legendControl.addTo(map);
     borrowLegend.addTo(map);
+    circleLegend.addTo(map);
+    
     // Hide the legend controls
     $('.legend').hide();
-    $('.blegend').hide();    
+    $('.blegend').hide();
+    $('.clegend').hide();    
 
     // select the newly created legend, select and populate the heading,
     // creating an unordered list for the class ranges and store as reference to variable
-    const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>"+
-                                     "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 7.39 &mdash; 9.03</li>"+
-                                     "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 3.94 &mdash; 7.38</li>"+
-                                     "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 1.56 &mdash; 3.93</li>"+
-                                     "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 1.01 &mdash; 1.55</li>"+
-                                     "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 1.00</li>");
+    const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>" +
+                                     "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 7.39 &mdash; 9.03</li>" +
+                                     "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 3.94 &mdash; 7.38</li>" +
+                                     "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 1.56 &mdash; 3.93</li>" +
+                                     "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 1.01 &mdash; 1.55</li>" +
+                                     "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 1.00</li>" +
+                                     "</ul>");
     
     const blegend = $('.blegend').html("<h4>Percent of Population<br>Borrowing Books</h4><ul>"+
-                                     "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 19% &mdash; 24%</li>"+
-                                     "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 16% &mdash; 19%</li>"+
-                                     "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 7% &mdash; 15%</li>"+
-                                     "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
-                                     "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>");
+                                       "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 19% &mdash; 24%</li>"+
+                                       "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 16% &mdash; 19%</li>"+
+                                       "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 7% &mdash; 15%</li>"+
+                                       "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
+                                       "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>" + 
+                                       "</ul>");
+
+    
 
     // Define an empty layer so that you can turn off precinct stats
     const emptyLayer = L.layerGroup().addTo(map);
@@ -428,6 +504,31 @@
         }
       });
 
+      // If the 'userData' layer is added
+      map.on('layeradd', function (eventLayer) {
+        if (eventLayer.layer === userData) {
+          // Show the circle legend
+          $('.clegend').show();
+        }
+      });
+
+      // If the 'userData' layer is removed
+      map.on('layerremove', function (eventLayer) {
+        if (eventLayer.layer === userData) {
+          // Hide the circle legend
+          $('.clegend').hide();
+        }
+      });
+
+      // If the map has 'userData'
+      if (map.hasLayer(userData)) {
+        // Show the circle legend
+        $('.clegend').show();
+      } else {
+        // Hide the circle legend
+        $('.clegend').hide();
+      }    
+
     }; // end drawMap function
 
     // Add a function to style the preincts by percentage of borrowers
@@ -448,7 +549,7 @@
         d > 1.00 ? '#fecc5c' :
         d > 0.00 ? '#ffffb2' :
         'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
-    };    
+    };  
 
   </script>
 
