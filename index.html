@@ -1,20 +1,16 @@
 <!doctype html>
 <html lang="en" class="no-js">
-
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <!-- title -->
   <title>Fairfield Public Library</title>
-
   <!-- link to Montserrat font -->
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-
   <!-- leaflet css -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+  <!-- grouped layer control -->
   <link rel="stylesheet" href="src/leaflet.groupedlayercontrol.css" />
-
   <!-- custom style here -->
   <style type="text/css">
     body,
@@ -22,7 +18,6 @@
       margin: 0;
       padding: 0;
     }
-
     /* Set map parameters */
     #map {
       position: fixed;
@@ -30,7 +25,7 @@
       width: 100%;
       top: 52px;
     }
-
+    /* Style the header */
     header {
       background-image: url('img/bookshelf.jpeg');
       position: fixed;
@@ -41,7 +36,7 @@
       box-shadow: 0px 0px 5px black;
       z-index: 800;
     }
-
+    /* Font styles */
     h1 {
       color: black;
       font-size: 16px;
@@ -53,7 +48,6 @@
       font-weight: bold;
       font-family: "Montserrat";
     }
-
     h2 {
       font-size: 12px;
       color: black;
@@ -65,17 +59,15 @@
       font-weight: bold;
       font-family: "Montserrat";
     }
-
     h4 {
       font-size: 16px;
       margin: 4px;
     }
-
     h5 {
       font-size: 13px;
       margin: 4px;
     }
-
+    /* Legend styles */
     .legend, .blegend, .clegend {
       padding: 6px 8px;
       font-size: 1em;
@@ -86,63 +78,44 @@
       width: auto !important;
       white-space: nowrap;
     }
-
     .legend ul, .blegend ul {
       list-style-type: none;
       padding: 0;
       margin: 12px 4px 0;
     }
-
     .legend li, .blegend li {
       height: 22px;
     }
-
     .legend span, .blegend span {
       width: 30px;
       height: 20px;
       float: left;
       margin-right: 10px;
     }
-
     .symbolsContainer {
     	float: left;
 		  margin-left: 50px;
     }
-
     .legendCircle {
       border-radius:50%; 
       border: 1px solid rgba(0, 0, 0, 0.5); 
       background: rgba(105, 141, 173, 0.8);
       display: inline-block;
     }
-    
     .legendValue {
       position: absolute;
       right: 8px;
     }    
-/*
-    .legend .square.present {
-      background-color: rgba(135, 206, 235, 0.5);
-    }
-
-    .legend .square.not-present {
-      background-color: rgba(211, 211, 211, 0.5);
-    }
-*/
   </style>
-
 </head>
-
 <body>
-
+  <!-- header text -->
   <header>
     <h1>Annual Public Reading Needs Met by the Fairfield Public Library</h1><br>
     <h2>Alecs Schmidt Mickunas, MLIS, Fairfield Public Library Director, Fairfield, Iowa</h2>
   </header>
-
   <!-- map -->
   <div id="map"></div>
-
   <!-- leaflet js -->
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
   <!-- d3js -->
@@ -151,13 +124,12 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
   <!-- chroma -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.2.1/chroma.min.js"></script>
+  <!-- grouped layer control -->
   <script src="src/leaflet.groupedlayercontrol.js"></script>
-
   <!-- javascript below -->
   <script>
     // initialize the map
     const map = L.map('map');
-
     // add a basemap
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -165,19 +137,16 @@
       maxZoom: 15,
       minZoom: 7
     }).addTo(map);
-
     // Add a scale bar
     L.control.scale({
       position: 'bottomleft'
     }).addTo(map);
-
     // Create a legend control
     const legendControl = L.control({ position: 'bottomright' });
     // Create another legend control for the borrowing percentage 
     const borrowLegend = L.control({ position: 'bottomright' });
     // Create another legend control for the proportional circles 
     const circleLegend = L.control({ position: 'bottomright' });    
-    
     // Create a legend div within the legend control
     legendControl.onAdd = function (map) {
       const legend = L.DomUtil.create('div', 'legend');
@@ -239,17 +208,14 @@
       // Return the legend
       return clegend;
     };
-
     // Add the legend controls to the map
     legendControl.addTo(map);
     borrowLegend.addTo(map);
     circleLegend.addTo(map);
-    
     // Hide the legend controls
     $('.legend').hide();
     $('.blegend').hide();
     $('.clegend').hide();    
-
     // select the newly created legend, select and populate the heading,
     // creating an unordered list for the class ranges and store as reference to variable
     const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>" +
@@ -259,7 +225,8 @@
                                      "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 1.01 &mdash; 1.55</li>" +
                                      "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 1.00</li>" +
                                      "</ul>");
-    
+    // select the newly created blegend, select and populate the heading,
+    // creating an unordered list for the class ranges and store as reference to variable    
     const blegend = $('.blegend').html("<h4>Percent of Population<br>Borrowing Books</h4><ul>"+
                                        "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 19% &mdash; 24%</li>"+
                                        "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 16% &mdash; 19%</li>"+
@@ -267,12 +234,8 @@
                                        "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
                                        "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>" + 
                                        "</ul>");
-
-    
-
     // Define an empty layer so that you can turn off precinct stats
     const emptyLayer = L.layerGroup().addTo(map);
-
     // Load the data asynchronously
     d3.queue()
       .defer(d3.json, 'data/jefferson-co.geojson') //the Jefferson County geojson file
@@ -280,11 +243,9 @@
       .defer(d3.json, 'data/precinct-stats.geojson') //the state precincts in Jefferson County
       .defer(d3.json, 'data/user-data.geojson') //the library borrowing data
       .await(drawMap); //load the layers after the map loads
-
     // Provide instructions for making the map
     function drawMap(err, jeffco, cty, precs, usr) {
-
-      // create Leaflet object with geometry data and add to map
+      // create Leaflet object with county boundary data and add to map
       const jeffersonCounty = L.geoJson(jeffco, {
         style: function(feature) {
             return {
@@ -294,7 +255,6 @@
               fillColor: 'rgb(0,0,0)'
             };
         },
-
         onEachFeature: function(feature, layer) {
           // bind a tooltip to the layer
           layer.bindTooltip('<b>Jefferson County</b>', {sticky: true});
@@ -305,7 +265,6 @@
               color: 'yellow'
             });
           });
-
           //define what happens on mouseout
           layer.on("mouseout", function(e) {
             layer.setStyle({
@@ -313,12 +272,9 @@
               color: 'black'
             });
           });
-
         }
-
       }).addTo(map);
-
-      // create Leaflet object with geometry data and add to map
+      // create Leaflet object with town boundary data and add to map
       const towns = L.geoJson(cty, {
         style: function(feature) {
           return {
@@ -328,7 +284,6 @@
             fillColor: 'rgb(0,0,0)'
           };
         },
-
         onEachFeature: function(feature, layer) {
           // define the layer properties
           const props = layer.feature.properties;
@@ -341,7 +296,6 @@
               color: 'yellow'
             });
           });
-
           //define what happens on mouseout
           layer.on("mouseout", function(e) {
             layer.setStyle({
@@ -349,12 +303,9 @@
               color: 'black'
             });
           });
-
         }
-
       }).addTo(map);        
-
-      // create Leaflet object with geometry data and add to map
+      // create Leaflet object with precinct borrowing data and add to map
       const precinctBorrowers = L.geoJson(precs, {
         style: function(feature) {
           return {
@@ -383,8 +334,7 @@
           });
         }
       });
-
-      // create Leaflet object with geometry data and add to map
+      // create Leaflet object with precinct book data and add to map
       const precinctBooks = L.geoJson(precs, {
         style: function(feature) {
           return {
@@ -413,7 +363,6 @@
           });
         }
       });      
-
       // create Leaflet object with geometry data and add to map
       const userData = L.geoJson(usr, {
         pointToLayer: function(feature, latlng) { // using pointToLayer...
@@ -438,7 +387,6 @@
               color: 'yellow'
             });
           });
-
           //define what happens on mouseout
           layer.on("mouseout", function(e) {
             layer.setStyle({
@@ -446,13 +394,10 @@
               color: 'black'
             });
           });
-
         }
       }).addTo(map);    
-
       // first set the zoom/center to the dataLayer's extent
       map.fitBounds(jeffersonCounty.getBounds());
-
       // Create an object with the overlay layers
       const groupedOverlays = {
         "Each Borrower": {
@@ -468,11 +413,8 @@
           "Turn Off": emptyLayer
         }
       };      
-
-
       // Add the layer control to the map
       L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Borrowing Rates by Precinct"] }).addTo(map);
-
       // Event listener for the overlayadd event
       map.on('overlayadd', function (eventLayer) {
         // Ensure layer order is maintained
@@ -503,7 +445,6 @@
           jeffersonCounty.bringToBack();
         }
       });
-
       // If the 'userData' layer is added
       map.on('layeradd', function (eventLayer) {
         if (eventLayer.layer === userData) {
@@ -511,7 +452,6 @@
           $('.clegend').show();
         }
       });
-
       // If the 'userData' layer is removed
       map.on('layerremove', function (eventLayer) {
         if (eventLayer.layer === userData) {
@@ -519,7 +459,6 @@
           $('.clegend').hide();
         }
       });
-
       // If the map has 'userData'
       if (map.hasLayer(userData)) {
         // Show the circle legend
@@ -528,9 +467,7 @@
         // Hide the circle legend
         $('.clegend').hide();
       }    
-
     }; // end drawMap function
-
     // Add a function to style the preincts by percentage of borrowers
     function borrowersColor(d) {
       return d > 0.19 ? '#bd0026' :
@@ -538,9 +475,8 @@
         d > 0.06 ? '#fd8d3c' :
         d > 0.04 ? '#fecc5c' :
         d > 0.00 ? '#ffffb2' :
-        'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
+        'rgba(0,0,0,0.0)';
     };
-
     // Add a function to style the preincts by books borrowed per person
     function booksColor(d) {
       return d > 7.38 ? '#bd0026' :
@@ -548,11 +484,8 @@
         d > 1.55 ? '#fd8d3c' :
         d > 1.00 ? '#fecc5c' :
         d > 0.00 ? '#ffffb2' :
-        'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
+        'rgba(0,0,0,0.0)';
     };  
-
   </script>
-
 </body>
-
 </html>
