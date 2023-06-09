@@ -181,18 +181,18 @@
     // select the newly created legend, select and populate the heading,
     // creating an unordered list for the class ranges and store as reference to variable
     const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>"+
-                                     "<li><span style='background: #bd0026'></span> 7.39 &mdash; 9.03</li>"+
-                                     "<li><span style='background: #f03b20'></span> 3.94 &mdash; 7.38</li>"+
-                                     "<li><span style='background: #fd8d3c'></span> 1.56 &mdash; 3.93</li>"+
-                                     "<li><span style='background: #fecc5c'></span> 1.01 &mdash; 1.55</li>"+
-                                     "<li><span style='background: #ffffb2'></span> 0.00 &mdash; 1.00</li>");
+                                     "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 7.39 &mdash; 9.03</li>"+
+                                     "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 3.94 &mdash; 7.38</li>"+
+                                     "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 1.56 &mdash; 3.93</li>"+
+                                     "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 1.01 &mdash; 1.55</li>"+
+                                     "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 1.00</li>");
     
     const blegend = $('.blegend').html("<h4>Percent of Population<br>Borrowing Books</h4><ul>"+
-                                     "<li><span style='background: #bd0026'></span> 19% &mdash; 24%</li>"+
-                                     "<li><span style='background: #f03b20'></span> 16% &mdash; 19%</li>"+
-                                     "<li><span style='background: #fd8d3c'></span> 7% &mdash; 15%</li>"+
-                                     "<li><span style='background: #fecc5c'></span> 5% &mdash; 6%</li>"+
-                                     "<li><span style='background: #ffffb2'></span> 0% &mdash; 4%</li>");
+                                     "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 19% &mdash; 24%</li>"+
+                                     "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 16% &mdash; 19%</li>"+
+                                     "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 7% &mdash; 15%</li>"+
+                                     "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
+                                     "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>");
 
     // Define an empty layer so that you can turn off precinct stats
     const emptyLayer = L.layerGroup().addTo(map);
