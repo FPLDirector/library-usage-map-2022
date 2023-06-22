@@ -327,8 +327,9 @@
                                       "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 0.58% &mdash; 0.77%</li>"+
                                       "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 0.57%</li>" + 
                                       "</ul>");    
-    // Define an empty layer so that you can turn off precinct stats
+    // Define empty layers so that you can turn off radio options
     const emptyLayer = L.layerGroup().addTo(map);
+    const blankLayer = L.layerGroup();
     // Load the data asynchronously
     d3.queue()
       .defer(d3.json, 'data/jefferson-co.geojson') //the Jefferson County geojson file
@@ -594,7 +595,7 @@
         "Each Borrower": {
           "Books Borrowed": userData,
           "Online Checkouts": onlineUserData,
-          "Turn Off": emptyLayer
+          "Turn Off": blankLayer
         },      
         "Borrowing Rates by Precinct": {
           "Per Capita Books Borrowed": precinctBooks,
