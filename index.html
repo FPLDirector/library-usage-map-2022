@@ -68,7 +68,7 @@
       margin: 4px;
     }
     /* Legend styles */
-    .legend, .blegend, .clegend {
+    .legend, .olegend, .blegend, .oblegend, .clegend, .oclegend {
       padding: 6px 8px;
       font-size: 1em;
       background: rgba(217, 217, 217, 0.8);
@@ -78,15 +78,15 @@
       width: auto !important;
       white-space: nowrap;
     }
-    .legend ul, .blegend ul {
+    .legend ul, .olegend ul, .blegend ul, .oblegend ul {
       list-style-type: none;
       padding: 0;
       margin: 12px 4px 0;
     }
-    .legend li, .blegend li {
+    .legend li, .olegend li, .blegend li, .oblegend li {
       height: 22px;
     }
-    .legend span, .blegend span {
+    .legend span, .olegend span, .blegend span, .oblegend span {
       width: 30px;
       height: 20px;
       float: left;
@@ -102,6 +102,12 @@
       background: rgba(105, 141, 173, 0.8);
       display: inline-block;
     }
+    .olegendCircle {
+      border-radius:50%; 
+      border: 1px solid rgba(0, 0, 0, 0.5); 
+      background: rgba(255, 213, 128, 0.8);
+      display: inline-block;
+    }    
     .legendValue {
       position: absolute;
       right: 8px;
@@ -146,7 +152,13 @@
     // Create another legend control for the borrowing percentage 
     const borrowLegend = L.control({ position: 'bottomright' });
     // Create another legend control for the proportional circles 
-    const circleLegend = L.control({ position: 'bottomright' });    
+    const circleLegend = L.control({ position: 'bottomright' }); 
+    // Create a legend control for online borrowers
+    const oLegendControl = L.control({ position: 'bottomright' });
+    // Create another legend control for the online borrowing percentage 
+    const oBorrowLegend = L.control({ position: 'bottomright' });
+    // Create another legend control for the online proportional circles 
+    const oCircleLegend = L.control({ position: 'bottomright' }); 
     // Create a legend div within the legend control
     legendControl.onAdd = function (map) {
       const legend = L.DomUtil.create('div', 'legend');
@@ -156,6 +168,15 @@
 	    });       
       return legend;
     };
+    // Create an olegend div within the legend control
+    oLegendControl.onAdd = function (map) {
+      const olegend = L.DomUtil.create('div', 'olegend');
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(olegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });       
+      return olegend;
+    };
     // Create a blegend div within the legend control
     borrowLegend.onAdd = function (map) {
       const blegend = L.DomUtil.create('div', 'blegend');
@@ -164,6 +185,15 @@
         L.DomEvent.stopPropagation(e); 
 	    });       
       return blegend;
+    };
+    // Create an oblegend div within the legend control
+    oBorrowLegend.onAdd = function (map) {
+      const oblegend = L.DomUtil.create('div', 'oblegend');
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(oblegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });       
+      return oblegend;
     };
     // Add content to the circleLegend
     circleLegend.onAdd = function (map) {
@@ -208,14 +238,63 @@
       // Return the legend
       return clegend;
     };
+    // Add content to the circleLegend
+    oCircleLegend.onAdd = function (map) {
+      // Create a oclegend div within the legend control 
+      const oclegend = L.DomUtil.create('div', 'oclegend');
+      // Create a symbolsContainer div within the legend control
+      const symbolsContainer = L.DomUtil.create('div', 'symbolsContainer');
+      // Define the low, middle, and high values for books borrowed per user
+      const classes = [10, 275, 549];
+      // Define some flexible values
+      let legendCircle;
+      let lastRadius = 0;
+      let currentRadius;
+      let margin;
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(oclegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });      
+      // Give the legend a title
+      $(oclegend).append("<h4>Online Checkouts<br>Per User</h4>");		
+      // Iterate through the three class values 
+      for (var i = 0; i <= classes.length-1; i++) {  
+        // Create a circle for each
+  			olegendCircle = L.DomUtil.create('div', 'olegendCircle');  
+        // Define each circle's radius
+  			currentRadius = Math.sqrt(classes[i] / Math.PI) * 2;
+        // Define the margins
+        margin = -currentRadius - lastRadius - 2;
+        // Set the styles for the circles
+        $(olegendCircle).attr("style", "width: " + currentRadius * 2 + 
+  				                   "px; height: " + currentRadius * 2 + 
+  				                   "px; margin-left: " + margin + "px" );		
+        // Append the values to the circles
+  			$(olegendCircle).append("<span class='legendValue'>" + classes[i] + "</span>");
+        // Append the circles to the symbolsContainer of the legend
+  			$(symbolsContainer).append(olegendCircle);
+        // Define the last radii
+  			lastRadius = currentRadius;
+    	}
+      // Append the symbolsContainer to the legend
+      $(oclegend).append(symbolsContainer);
+      // Return the legend
+      return oclegend;
+    };
     // Add the legend controls to the map
     legendControl.addTo(map);
+    oLegendControl.addTo(map);
     borrowLegend.addTo(map);
+    oBorrowLegend.addTo(map);
     circleLegend.addTo(map);
+    oCircleLegend.addTo(map);
     // Hide the legend controls
     $('.legend').hide();
+    $('.olegend').hide();
     $('.blegend').hide();
+    $('.oblegend').hide();
     $('.clegend').hide();    
+    $('.oclegend').hide();
     // select the newly created legend, select and populate the heading,
     // creating an unordered list for the class ranges and store as reference to variable
     const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>" +
@@ -225,15 +304,29 @@
                                      "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 1.01 &mdash; 1.55</li>" +
                                      "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 1.00</li>" +
                                      "</ul>");
+    const olegend = $('.olegend').html("<h4>Online Checkouts<br>Per Capita</h4><ul>" +
+                                     "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 0.76 &mdash; 1.07</li>" +
+                                     "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 0.38 &mdash; 0.75</li>" +
+                                     "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 0.26 &mdash; 0.37</li>" +
+                                     "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 0.09 &mdash; 0.25</li>" +
+                                     "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 0.08</li>" +
+                                     "</ul>");                                     
     // select the newly created blegend, select and populate the heading,
     // creating an unordered list for the class ranges and store as reference to variable    
     const blegend = $('.blegend').html("<h4>Percent of Population<br>Borrowing Books</h4><ul>"+
-                                       "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 19% &mdash; 24%</li>"+
-                                       "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 16% &mdash; 19%</li>"+
-                                       "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 7% &mdash; 15%</li>"+
-                                       "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
-                                       "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>" + 
-                                       "</ul>");
+                                      "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 19% &mdash; 24%</li>"+
+                                      "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 16% &mdash; 19%</li>"+
+                                      "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 7% &mdash; 15%</li>"+
+                                      "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
+                                      "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>" + 
+                                      "</ul>");
+    const oblegend = $('.oblegend').html("<h4>Percent of Population<br>Borrowing Online</h4><ul>"+
+                                      "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 2.90% &mdash; 3.32%</li>"+
+                                      "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 2.51% &mdash; 2.89%</li>"+
+                                      "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 0.78% &mdash; 2.50%</li>"+
+                                      "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 0.58% &mdash; 0.77%</li>"+
+                                      "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 0.57%</li>" + 
+                                      "</ul>");    
     // Define an empty layer so that you can turn off precinct stats
     const emptyLayer = L.layerGroup().addTo(map);
     // Load the data asynchronously
@@ -242,9 +335,12 @@
       .defer(d3.json, 'data/cities.geojson') //city and town boundaries for Jefferson County
       .defer(d3.json, 'data/precinct-stats.geojson') //the state precincts in Jefferson County
       .defer(d3.json, 'data/user-data.geojson') //the library borrowing data
+      // add the online user data
+      .defer(d3.json, 'data/online-precinct-stats.geojson')
+      .defer(d3.json, 'data/online-user-data.geojson')
       .await(drawMap); //load the layers after the map loads
     // Provide instructions for making the map
-    function drawMap(err, jeffco, cty, precs, usr) {
+    function drawMap(err, jeffco, cty, precs, usr, oprecs, ousr) {
       // create Leaflet object with county boundary data and add to map
       const jeffersonCounty = L.geoJson(jeffco, {
         style: function(feature) {
@@ -262,7 +358,7 @@
           layer.on("mouseover", function(e) {
             layer.setStyle({
               weight: 1.5,
-              color: 'yellow'
+              color: 'black'
             });
           });
           //define what happens on mouseout
@@ -292,8 +388,8 @@
           //define what happens on mouseover
           layer.on("mouseover", function(e) {
             layer.setStyle({
-              weight: 1,
-              color: 'yellow'
+              weight: 1.5,
+              color: 'black'
             });
           });
           //define what happens on mouseout
@@ -395,26 +491,120 @@
             });
           });
         }
-      }).addTo(map);    
+      }).addTo(map);
+      // create Leaflet object with precinct book data and add to map
+      const onlinePrecinctCheckouts = L.geoJson(oprecs, {
+        style: function(feature) {
+          return {
+            color: 'black',
+            weight: 0.5,
+            fillOpacity: 0.5,
+            fillColor: onlineBooksColor(feature.properties.checkouts_percap)
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>PRECINCT: '+props.DISTRICT+'</b><br>'+props.checkouts_percap+' Online Checkouts Per Person', {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            e.target.setStyle({
+              weight: 1.5
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            e.target.setStyle({
+              weight: 0.5
+            });
+          });
+        }
+      }); 
+      // create Leaflet object with precinct borrowing data and add to map
+      const onlinePrecinctBorrowers = L.geoJson(oprecs, {
+        style: function(feature) {
+          return {
+            color: 'black',
+            weight: 0.5,
+            fillOpacity: 0.5,
+            fillColor: onlineBorrowersColor(feature.properties.borrowers_percap)
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>PRECINCT: '+props.DISTRICT+'</b><br>'+(props.borrowers_percap*100).toFixed(2)+'% of Population are Online Users', {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            e.target.setStyle({
+              weight: 1.5
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            e.target.setStyle({
+              weight: 0.5
+            });
+          });
+        }
+      });
+      // create Leaflet object with geometry data and add to map 
+      const onlineUserData = L.geoJson(ousr, {
+        pointToLayer: function(feature, latlng) { // using pointToLayer...
+          return L.circleMarker(latlng, {
+            fillColor: '#FFD580', // set the fill color
+            color: 'black', // set the border color
+            opacity: 0.5, // set the opacity of the border
+            weight: 1, // set the weight of the border
+            fillOpacity: 0.8, // set the opacity of the fill color
+            radius: Math.sqrt(feature.properties.Checkouts / Math.PI) * 2 // set the radii of the circles
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>'+props.Address+'</b><br>Online Checkouts: '+props.Checkouts, {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.5,
+              color: 'yellow'
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.8,
+              color: 'black'
+            });
+          });
+        }
+      });
       // first set the zoom/center to the dataLayer's extent
       map.fitBounds(jeffersonCounty.getBounds());
       // Create an object with the overlay layers
       const groupedOverlays = {
-        "Each Borrower": {
-          "Books Borrowed": userData
-        },
         "Jurisdictions": {
           "Jefferson County": jeffersonCounty,
           "Cities and Towns": towns
-        },        
+        },  
+        "Each Borrower": {
+          "Books Borrowed": userData,
+          "Online Checkouts": onlineUserData,
+        },      
         "Borrowing Rates by Precinct": {
           "Per Capita Books Borrowed": precinctBooks,
           "Percent Borrowers": precinctBorrowers,
+          "Per Capita Online Checkouts": onlinePrecinctCheckouts,
+          "Percent Online Borrowers": onlinePrecinctBorrowers,
           "Turn Off": emptyLayer
         }
       };      
       // Add the layer control to the map
-      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Borrowing Rates by Precinct"] }).addTo(map);
+      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Each Borrower","Borrowing Rates by Precinct"] }).addTo(map);
       // Event listener for the overlayadd event
       map.on('overlayadd', function (eventLayer) {
         // Ensure layer order is maintained
@@ -423,16 +613,38 @@
           precinctBorrowers.bringToBack();
           jeffersonCounty.bringToBack();
           $('.legend').hide(); // hide the legend control
+          $('.olegend').hide();
+          $('.oblegend').hide();
           $('.blegend').show(); // show this legend control
         } if (eventLayer.layer === precinctBooks) {
           towns.bringToBack();          
           precinctBooks.bringToBack();
           jeffersonCounty.bringToBack();
           $('.legend').show(); // show the legend control
+          $('.olegend').hide();
           $('.blegend').hide(); // hide this legend control
+          $('.oblegend').hide();
+        } if (eventLayer.layer === onlinePrecinctBorrowers) {
+          $('.oblegend').show(); // show the legend control
+          $('.olegend').hide();
+          $('.blegend').hide(); // hide this legend control
+          $('.legend').hide(); 
+          towns.bringToBack();
+          onlinePrecinctBorrowers.bringToBack();
+          jeffersonCounty.bringToBack();
+        } if (eventLayer.layer === onlinePrecinctCheckouts) {
+          $('.olegend').show();// show the legend control
+          $('.oblegend').hide(); 
+          $('.blegend').hide(); // hide this legend control
+          $('.legend').hide();           
+          towns.bringToBack();          
+          onlinePrecinctCheckouts.bringToBack();
+          jeffersonCounty.bringToBack();
         } if (eventLayer.layer === emptyLayer) {
           $('.legend').hide(); // hide the legend control
+          $('.olegend').hide();
           $('.blegend').hide(); // hide this legend control
+          $('.oblegend').hide();
         } if (eventLayer.layer === jeffersonCounty) {
           towns.bringToBack();          
           precinctBorrowers.bringToBack();
@@ -452,11 +664,25 @@
           $('.clegend').show();
         }
       });
+      // If the 'onlineUserData' layer is added
+      map.on('layeradd', function (eventLayer) {
+        if (eventLayer.layer === onlineUserData) {
+          // Show the circle legend
+          $('.oclegend').show();
+        }
+      });      
       // If the 'userData' layer is removed
       map.on('layerremove', function (eventLayer) {
         if (eventLayer.layer === userData) {
           // Hide the circle legend
           $('.clegend').hide();
+        }
+      });
+      // If the 'onlineUserData' layer is removed
+      map.on('layerremove', function (eventLayer) {
+        if (eventLayer.layer === onlineUserData) {
+          // Hide the circle legend
+          $('.oclegend').hide();
         }
       });
       // If the map has 'userData'
@@ -466,7 +692,15 @@
       } else {
         // Hide the circle legend
         $('.clegend').hide();
-      }    
+      }  
+      // If the map has 'onlineUserData'
+      if (map.hasLayer(onlineUserData)) {
+        // Show the circle legend
+        $('.oclegend').show();
+      } else {
+        // Hide the circle legend
+        $('.oclegend').hide();
+      }  
     }; // end drawMap function
     // Add a function to style the preincts by percentage of borrowers
     function borrowersColor(d) {
@@ -477,12 +711,28 @@
         d > 0.00 ? '#ffffb2' :
         'rgba(0,0,0,0.0)';
     };
+    function onlineBorrowersColor(d) {
+      return d > 0.0289 ? '#bd0026' :
+        d > 0.0250 ? '#f03b20' :
+        d > 0.0077 ? '#fd8d3c' :
+        d > 0.0057 ? '#fecc5c' :
+        d > 0.0000 ? '#ffffb2' :
+        'rgba(0,0,0,0.0)';
+    };
     // Add a function to style the preincts by books borrowed per person
     function booksColor(d) {
       return d > 7.38 ? '#bd0026' :
         d > 3.93 ? '#f03b20' :
         d > 1.55 ? '#fd8d3c' :
         d > 1.00 ? '#fecc5c' :
+        d > 0.00 ? '#ffffb2' :
+        'rgba(0,0,0,0.0)';
+    };
+    function onlineBooksColor(d) {
+      return d > 0.75 ? '#bd0026' :
+        d > 0.37 ? '#f03b20' :
+        d > 0.25 ? '#fd8d3c' :
+        d > 0.08 ? '#fecc5c' :
         d > 0.00 ? '#ffffb2' :
         'rgba(0,0,0,0.0)';
     };  
