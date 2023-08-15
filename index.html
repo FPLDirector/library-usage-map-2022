@@ -476,7 +476,7 @@
           // define the layer properties
           const props = layer.feature.properties;
           // bind a tooltip to the layer
-          layer.bindTooltip('<b>'+props.Address+'</b><br>Books Borrowed: '+props.Books, {sticky: true});
+          layer.bindTooltip('<b>Books Borrowed: </b>'+props.Books, {sticky: true});
           //define what happens on mouseover
           layer.on("mouseover", function(e) {
             layer.setStyle({
@@ -567,7 +567,7 @@
           // define the layer properties
           const props = layer.feature.properties;
           // bind a tooltip to the layer
-          layer.bindTooltip('<b>'+props.Address+'</b><br>Online Checkouts: '+props.Checkouts, {sticky: true});
+          layer.bindTooltip('<b>Online Checkouts: </b>'+props.Checkouts, {sticky: true});
           //define what happens on mouseover
           layer.on("mouseover", function(e) {
             layer.setStyle({
