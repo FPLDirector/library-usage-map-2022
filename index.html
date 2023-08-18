@@ -68,7 +68,7 @@
       margin: 4px;
     }
     /* Legend styles */
-    .legend, .olegend, .blegend, .oblegend, .clegend, .oclegend {
+    .legend, .olegend, .blegend, .oblegend, .clegend, .oclegend, .bhlegend, .ohlegend, .bclegend, .obclegend {
       padding: 6px 8px;
       font-size: 1em;
       background: rgba(217, 217, 217, 0.8);
@@ -78,15 +78,15 @@
       width: auto !important;
       white-space: nowrap;
     }
-    .legend ul, .olegend ul, .blegend ul, .oblegend ul {
+    .legend ul, .olegend ul, .blegend ul, .oblegend ul, .bhlegend ul, .ohlegend ul {
       list-style-type: none;
       padding: 0;
       margin: 12px 4px 0;
     }
-    .legend li, .olegend li, .blegend li, .oblegend li {
+    .legend li, .olegend li, .blegend li, .oblegend li, .bhlegend li, .ohlegend li {
       height: 22px;
     }
-    .legend span, .olegend span, .blegend span, .oblegend span {
+    .legend span, .olegend span, .blegend span, .oblegend span, .bhlegend span, .ohlegend span {
       width: 30px;
       height: 20px;
       float: left;
@@ -158,7 +158,18 @@
     // Create another legend control for the online borrowing percentage 
     const oBorrowLegend = L.control({ position: 'bottomright' });
     // Create another legend control for the online proportional circles 
-    const oCircleLegend = L.control({ position: 'bottomright' }); 
+    const oCircleLegend = L.control({ position: 'bottomright' });
+
+    // Create a legend control for the books borrowed hex grid
+    const borrowHexLegend = L.control({ position: 'bottomright' });
+    // Create a legend control for the online checkouts hex grid
+    const onlineHexLegend = L.control({ position: 'bottomright' });
+    
+    // Create a legend control for the books borrowed hex grid centroids
+    const borrowCentroidLegend = L.control({ position: 'bottomright' });
+    // Create a legend control for the online checkouts hex grid centroids
+    const onlineCentroidLegend = L.control({ position: 'bottomright' });
+
     // Create a legend div within the legend control
     legendControl.onAdd = function (map) {
       const legend = L.DomUtil.create('div', 'legend');
@@ -281,6 +292,113 @@
       // Return the legend
       return oclegend;
     };
+
+    // Create a bhlegend div within the legend control
+    borrowHexLegend.onAdd = function (map) {
+      const bhlegend = L.DomUtil.create('div', 'bhlegend');
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(bhlegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e);
+      });
+      return bhlegend;
+    };
+    // Create an ohlegend div within the legend control
+    onlineHexLegend.onAdd = function (map) {
+      const ohlegend = L.DomUtil.create('div', 'ohlegend');
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(ohlegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e);
+      });
+      return ohlegend;
+    };
+
+    // Add content to the borrowCentroidLegend
+    borrowCentroidLegend.onAdd = function (map) {
+      // Create a bclegend div within the legend control 
+      const bclegend = L.DomUtil.create('div', 'bclegend');
+      // Create a symbolsContainer div within the legend control
+      const symbolsContainer = L.DomUtil.create('div', 'symbolsContainer');
+      // Define the low, middle, and high values for books borrowed per user
+      const classes = [10, 3083, 6166];
+      // Define some flexible values
+      let legendCircle;
+      let lastRadius = 0;
+      let currentRadius;
+      let margin;
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(bclegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });      
+      // Give the legend a title
+      $(bclegend).append("<h4>Books Borrowed</h4>");		
+      // Iterate through the three class values 
+      for (var i = 0; i <= classes.length-1; i++) {  
+        // Create a circle for each
+  			legendCircle = L.DomUtil.create('div', 'legendCircle');  
+        // Define each circle's radius
+  			currentRadius = Math.sqrt(classes[i] / Math.PI);
+        // Define the margins
+        margin = -currentRadius - lastRadius - 2;
+        // Set the styles for the circles
+        $(legendCircle).attr("style", "width: " + currentRadius * 2 + 
+  				                   "px; height: " + currentRadius * 2 + 
+  				                   "px; margin-left: " + margin + "px" );		
+        // Append the values to the circles
+  			$(legendCircle).append("<span class='legendValue'>" + classes[i] + "</span>");
+        // Append the circles to the symbolsContainer of the legend
+  			$(symbolsContainer).append(legendCircle);
+        // Define the last radii
+  			lastRadius = currentRadius;
+    	}
+      // Append the symbolsContainer to the legend
+      $(bclegend).append(symbolsContainer);
+      // Return the legend
+      return bclegend;
+    };
+    // Add content to the onlineCentroidLegend
+    onlineCentroidLegend.onAdd = function (map) {
+      // Create a obclegend div within the legend control 
+      const obclegend = L.DomUtil.create('div', 'obclegend');
+      // Create a symbolsContainer div within the legend control
+      const symbolsContainer = L.DomUtil.create('div', 'symbolsContainer');
+      // Define the low, middle, and high values for books borrowed per user
+      const classes = [10, 415, 831];
+      // Define some flexible values
+      let olegendCircle;
+      let lastRadius = 0;
+      let currentRadius;
+      let margin;
+      // Stop mouseclicks from having an effect over the control
+      L.DomEvent.addListener(obclegend, 'mousedown', function(e) { 
+        L.DomEvent.stopPropagation(e); 
+	    });      
+      // Give the legend a title
+      $(obclegend).append("<h4>Books Borrowed</h4>");		
+      // Iterate through the three class values 
+      for (var i = 0; i <= classes.length-1; i++) {  
+        // Create a circle for each
+  			olegendCircle = L.DomUtil.create('div', 'olegendCircle');  
+        // Define each circle's radius
+  			currentRadius = Math.sqrt(classes[i] / Math.PI) * 2;
+        // Define the margins
+        margin = -currentRadius - lastRadius - 2;
+        // Set the styles for the circles
+        $(olegendCircle).attr("style", "width: " + currentRadius * 2 + 
+  				                   "px; height: " + currentRadius * 2 + 
+  				                   "px; margin-left: " + margin + "px" );		
+        // Append the values to the circles
+  			$(olegendCircle).append("<span class='legendValue'>" + classes[i] + "</span>");
+        // Append the circles to the symbolsContainer of the legend
+  			$(symbolsContainer).append(olegendCircle);
+        // Define the last radii
+  			lastRadius = currentRadius;
+    	}
+      // Append the symbolsContainer to the legend
+      $(obclegend).append(symbolsContainer);
+      // Return the legend
+      return obclegend;
+    };
+
     // Add the legend controls to the map
     legendControl.addTo(map);
     oLegendControl.addTo(map);
@@ -288,6 +406,15 @@
     oBorrowLegend.addTo(map);
     circleLegend.addTo(map);
     oCircleLegend.addTo(map);
+
+    // Add the hex legend controls to the map
+    borrowHexLegend.addTo(map);
+    onlineHexLegend.addTo(map);
+
+    borrowCentroidLegend.addTo(map);
+    onlineCentroidLegend.addTo(map);
+
+
     // Hide the legend controls
     $('.legend').hide();
     $('.olegend').hide();
@@ -295,6 +422,14 @@
     $('.oblegend').hide();
     $('.clegend').hide();    
     $('.oclegend').hide();
+
+    // Hide the hex legend controls
+    $('.bhlegend').hide();
+    $('.ohlegend').hide();
+
+    $('.bclegend').hide();
+    $('.obclegend').hide();
+
     // select the newly created legend, select and populate the heading,
     // creating an unordered list for the class ranges and store as reference to variable
     const legend = $('.legend').html("<h4>Books Borrowed<br>Per Capita</h4><ul>" +
@@ -304,6 +439,8 @@
                                      "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 1.01 &mdash; 1.55</li>" +
                                      "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0.00 &mdash; 1.00</li>" +
                                      "</ul>");
+    // select the newly created olegend, select and populate the heading,
+    // creating an unordered list for the class ranges and store as reference to variable                                 
     const olegend = $('.olegend').html("<h4>Online Checkouts<br>Per Capita</h4><ul>" +
                                      "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 0.76 &mdash; 1.07</li>" +
                                      "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 0.38 &mdash; 0.75</li>" +
@@ -320,16 +457,42 @@
                                       "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 5% &mdash; 6%</li>"+
                                       "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 4%</li>" + 
                                       "</ul>");
+    // select the newly created oblegend, select and populate the heading,
+    // creating an unordered list for the class ranges and store as reference to variable                                     
     const oblegend = $('.oblegend').html("<h4>Percent of Population<br>Borrowing Online</h4><ul>"+
                                       "<li><span style='background: rgba(189, 0, 38, 0.5)'></span> 2.90% &mdash; 3.32%</li>"+
                                       "<li><span style='background: rgba(240, 59, 32, 0.5)'></span> 2.51% &mdash; 2.89%</li>"+
                                       "<li><span style='background: rgba(253, 141, 60, 0.5)'></span> 0.78% &mdash; 2.50%</li>"+
                                       "<li><span style='background: rgba(254, 204, 92, 0.5)'></span> 0.58% &mdash; 0.77%</li>"+
                                       "<li><span style='background: rgba(255, 255, 178, 0.5)'></span> 0% &mdash; 0.57%</li>" + 
-                                      "</ul>");    
+                                      "</ul>");
+                                      
+    // select the newly created hexlegend, select and populate the heading,
+    // creating an unordered list for the class ranges and store as reference to variable
+    const hexLegend = $('.bhlegend').html("<h4>Books Borrowed</h4><ul>" +
+                                     "<li><span style='background: rgba(103,0,13, 0.5)'></span> 4614 &mdash; 6629</li>" +
+                                     "<li><span style='background: rgba(186,20,25, 0.5)'></span> 2470 &mdash; 4613</li>" +
+                                     "<li><span style='background: rgba(255,14,1, 0.5)'></span> 1436 &mdash; 2469</li>" +
+                                     "<li><span style='background: rgba(251,112,80, 0.5)'></span> 388 &mdash; 1435</li>" +
+                                     "<li><span style='background: rgba(252,164,134, 0.5)'></span> 115 &mdash; 387</li>" +
+                                     "<li><span style='background: rgba(253,214,196, 0.5)'></span> 1 &mdash; 114</li>" +
+                                     "</ul>");
+    // select the newly created ohexlegend, select and populate the heading,
+    // creating an unordered list for the class ranges and store as reference to variable
+    const ohexLegend = $('.ohlegend').html("<h4>Online Checkouts</h4><ul>" +
+                                     "<li><span style='background: rgba(103,0,13, 0.5)'></span> 422 &mdash; 646</li>" +
+                                     "<li><span style='background: rgba(186,20,25, 0.5)'></span> 173 &mdash; 421</li>" +
+                                     "<li><span style='background: rgba(255,14,1, 0.5)'></span> 103 &mdash; 172</li>" +
+                                     "<li><span style='background: rgba(251,112,80, 0.5)'></span> 65 &mdash; 102</li>" +
+                                     "<li><span style='background: rgba(252,164,134, 0.5)'></span> 18 &mdash; 64</li>" +
+                                     "<li><span style='background: rgba(253,214,196, 0.5)'></span> 1 &mdash; 17</li>" +
+                                     "</ul>");                                    
+
+
     // Define empty layers so that you can turn off radio options
     const emptyLayer = L.layerGroup().addTo(map);
     const blankLayer = L.layerGroup();
+    const voidLayer = L.layerGroup();
     // Load the data asynchronously
     d3.queue()
       .defer(d3.json, 'data/jefferson-co.geojson') //the Jefferson County geojson file
@@ -339,9 +502,14 @@
       // add the online user data
       .defer(d3.json, 'data/online-precinct-stats.geojson')
       .defer(d3.json, 'data/online-user-data.geojson')
+      // add options
+      .defer(d3.json, 'data/user-data-hexgrid.geojson')
+      .defer(d3.json, 'data/online-user-data-hexgrid.geojson')
+      .defer(d3.json, 'data/user-data-hex-centroids.geojson')
+      .defer(d3.json, 'data/online-user-data-hex-centroids.geojson')
       .await(drawMap); //load the layers after the map loads
     // Provide instructions for making the map
-    function drawMap(err, jeffco, cty, precs, usr, oprecs, ousr) {
+    function drawMap(err, jeffco, cty, precs, usr, oprecs, ousr, borrowerHex, onlineHex, borrowerHexCentroids, onlineHexCentroids) {
       // create Leaflet object with county boundary data and add to map
       const jeffersonCounty = L.geoJson(jeffco, {
         style: function(feature) {
@@ -584,6 +752,137 @@
           });
         }
       });
+      // create a Leaflet object with geometry data and add to map
+      const borrowerHexGrid = L.geoJson(borrowerHex, {
+        filter: function(feature, layer) {
+          return feature.properties.NUMPOINTS > 0;
+        },
+        style: function(feature) {
+          return {
+            color: 'black',
+            weight: 0.25,
+            fillOpacity: 0.5,
+            fillColor: booksHexColor(feature.properties.NUMPOINTS)
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>Books Borrowed: </b>'+props.NUMPOINTS, {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              weight: 1.5
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              weight: 0.25
+            });
+          });
+        }
+      });
+      // create a Leaflet object with geometry data and add to map
+      const onlineHexGrid = L.geoJson(onlineHex, {
+        filter: function(feature, layer) {
+          return feature.properties.NUMPOINTS > 0;
+        },        
+        style: function(feature) {
+          return {
+            color: 'black',
+            weight: 0.0,
+            fillOpacity: 0.5,
+            fillColor: onlineBooksHexColor(feature.properties.NUMPOINTS)
+          };
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>Online Checkouts: </b>'+props.NUMPOINTS, {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              weight: 1.5
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              weight: 0.0
+            });
+          });
+        }
+      });
+
+       // create Leaflet object with geometry data and add to map
+       const userDataHexCentroids = L.geoJson(borrowerHexCentroids, {
+        pointToLayer: function(feature, latlng) { // using pointToLayer...
+          return L.circleMarker(latlng, {
+            fillColor: '#698DAD', // set the fill color
+            color: 'black', // set the border color
+            opacity: 0.5, // set the opacity of the border
+            weight: 1, // set the weight of the border
+            fillOpacity: 0.8, // set the opacity of the fill color
+            radius: Math.sqrt(feature.properties.NUMPOINTS / Math.PI) // set the radii of the circles
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>Books Borrowed: </b>'+props.NUMPOINTS, {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.5,
+              color: 'yellow'
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.8,
+              color: 'black'
+            });
+          });
+        }
+      });
+      // create Leaflet object with geometry data and add to map
+      const onlineUserDataHexCentroids = L.geoJson(onlineHexCentroids, {
+        pointToLayer: function(feature, latlng) { // using pointToLayer...
+          return L.circleMarker(latlng, {
+            fillColor: '#FFD580', // set the fill color
+            color: 'black', // set the border color
+            opacity: 0.5, // set the opacity of the border
+            weight: 1, // set the weight of the border
+            fillOpacity: 0.8, // set the opacity of the fill color
+            radius: Math.sqrt(feature.properties.NUMPOINTS / Math.PI) *2 // set the radii of the circles
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          // define the layer properties
+          const props = layer.feature.properties;
+          // bind a tooltip to the layer
+          layer.bindTooltip('<b>Online Checkouts: </b>'+props.NUMPOINTS, {sticky: true});
+          //define what happens on mouseover
+          layer.on("mouseover", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.5,
+              color: 'yellow'
+            });
+          });
+          //define what happens on mouseout
+          layer.on("mouseout", function(e) {
+            layer.setStyle({
+              fillOpacity: 0.8,
+              color: 'black'
+            });
+          });
+        }
+      });     
       // first set the zoom/center to the dataLayer's extent
       map.fitBounds(jeffersonCounty.getBounds());
       // Create an object with the overlay layers
@@ -596,7 +895,14 @@
           "Books Borrowed": userData,
           "Online Checkouts": onlineUserData,
           "Turn Off": blankLayer
-        },      
+        },
+        "Each Borrower Alternate Options": {
+          "Books Borrowed Hex Grid": borrowerHexGrid,
+          "Online Checkouts Hex Grid": onlineHexGrid,
+          "Books Borrowed Hex Centroids": userDataHexCentroids,
+          "Online Checkouts Hex Centroids": onlineUserDataHexCentroids,
+          "Turn Off": voidLayer
+        },
         "Borrowing Rates by Precinct": {
           "Per Capita Books Borrowed": precinctBooks,
           "Percent Borrowers": precinctBorrowers,
@@ -606,7 +912,7 @@
         }
       };      
       // Add the layer control to the map
-      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Each Borrower","Borrowing Rates by Precinct"] }).addTo(map);
+      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Each Borrower","Each Borrower Alternate Options","Borrowing Rates by Precinct"] }).addTo(map);
       // Event listener for the overlayadd event
       map.on('overlayadd', function (eventLayer) {
         // Ensure layer order is maintained
@@ -659,32 +965,60 @@
           jeffersonCounty.bringToBack();
         }
       });
-      // If the 'userData' layer is added
+      // On layer add...
       map.on('layeradd', function (eventLayer) {
+        // If the 'userData' layer is added
         if (eventLayer.layer === userData) {
           // Show the circle legend
           $('.clegend').show();
-        }
-      });
-      // If the 'onlineUserData' layer is added
-      map.on('layeradd', function (eventLayer) {
-        if (eventLayer.layer === onlineUserData) {
+        // If the 'onlineUserData' layer is added  
+        } if (eventLayer.layer === onlineUserData) {
           // Show the circle legend
           $('.oclegend').show();
+        // If the 'borrowerHexGrid' layer is added
+        } if (eventLayer.layer === borrowerHexGrid) {
+          // Show the bhlegend
+          $('.bhlegend').show();
+        // If the 'onlineHexGrid' layer is added
+        } if (eventLayer.layer === onlineHexGrid) {
+          // Show the ohlegend
+          $('.ohlegend').show();
+        // If the 'userDataHexCentroids' layer is added
+        } if (eventLayer.layer === userDataHexCentroids) {
+          // Show the bclegend
+          $('.bclegend').show();
+        // If the 'onlineUserDataHexCentroids' layer is added
+        } if (eventLayer.layer === onlineUserDataHexCentroids) {
+          $('.obclegend').show();
         }
-      });      
-      // If the 'userData' layer is removed
+      });  
+      // On layer remove...
       map.on('layerremove', function (eventLayer) {
+        // If the 'userData' layer is removed
         if (eventLayer.layer === userData) {
           // Hide the circle legend
           $('.clegend').hide();
-        }
-      });
-      // If the 'onlineUserData' layer is removed
-      map.on('layerremove', function (eventLayer) {
-        if (eventLayer.layer === onlineUserData) {
+        // If the 'onlineUserData' layer is removed  
+        } if (eventLayer.layer === onlineUserData) {
           // Hide the circle legend
           $('.oclegend').hide();
+        }
+        // If the 'borrowerHexGrid' layer is removed
+        if (eventLayer.layer === borrowerHexGrid) {
+          // Hide the bhlegend
+          $('.bhlegend').hide();
+        // If the 'onlineHexGrid' layer is removed
+        } if (eventLayer.layer === onlineHexGrid) {
+          // Hide the ohlegend
+          $('.ohlegend').hide();
+        // If the 'userDataHexCentroids' layer is removed
+        } if (eventLayer.layer === userDataHexCentroids) {
+          // Hide the bclegend
+          $('.bclegend').hide();
+        // If the 'onlineUserDataHexCentroids' layer is removed
+        } if (eventLayer.layer === onlineUserDataHexCentroids) {
+          // Hide the obclegend
+          $('.obclegend').hide();
         }
       });
       // If the map has 'userData'
@@ -703,8 +1037,42 @@
         // Hide the circle legend
         $('.oclegend').hide();
       }  
+      // If the map has 'borrowerHexGrid'
+      if (map.hasLayer(borrowerHexGrid)) {
+        // Show the bhlegend
+        $('.bhlegend').show();
+      } else {
+        // Hide the bhlegend
+        $('.bhlegend').hide();
+      }
+      // If the map has 'onlineHexGrid'
+      if (map.hasLayer(onlineHexGrid)) {
+        // Show the ohlegend
+        $('.ohlegend').show();
+      } else {
+        // Hide the ohlegend
+        $('.ohlegend').hide();
+      }
+
+      // If the map has 'userDataHexCentroids'
+      if (map.hasLayer(userDataHexCentroids)) {
+        // Show the bclegend
+        $('.bclegend').show();
+      } else {
+        // Hide the bclegend
+        $('.bclegend').hide();
+      } 
+      // If the map has 'onlineUserDataHexCentroids'
+      if (map.hasLayer(onlineUserDataHexCentroids)) {
+        // Show the obclegend
+        $('.obclegend').show();
+      } else {
+        // Hide the obclegend
+        $('.obclegend').hide();
+      }
+
     }; // end drawMap function
-    // Add a function to style the preincts by percentage of borrowers
+    // Add a function to style the precincts by percentage of borrowers
     function borrowersColor(d) {
       return d > 0.19 ? '#bd0026' :
         d > 0.15 ? '#f03b20' :
@@ -721,7 +1089,7 @@
         d > 0.0000 ? '#ffffb2' :
         'rgba(0,0,0,0.0)';
     };
-    // Add a function to style the preincts by books borrowed per person
+    // Add a function to style the precincts by books borrowed per person
     function booksColor(d) {
       return d > 7.38 ? '#bd0026' :
         d > 3.93 ? '#f03b20' :
@@ -737,7 +1105,27 @@
         d > 0.08 ? '#fecc5c' :
         d > 0.00 ? '#ffffb2' :
         'rgba(0,0,0,0.0)';
-    };  
+    }; 
+    // Add a function to style the books borrowed hex grid
+    function booksHexColor(d) {
+      return d > 4613 ? 'rgb(103,0,13)' :
+        d > 2469 ? 'rgb(186,20,25)' :
+        d > 1435 ? 'rgb(255,14,1)' :
+        d > 387 ? 'rgb(251,112,80)' :
+        d > 114 ? 'rgb(252,164,134)' :
+        d > 0 ? 'rgb(253,214,196)' :
+        'rgba(0,0,0,0.0)';
+    };
+    // Add a function to style the online checkouts hex grid
+    function onlineBooksHexColor(d) {
+      return d > 421 ? 'rgb(103,0,13)' :
+        d > 172 ? 'rgb(186,20,25)' :
+        d > 102 ? 'rgb(255,14,1)' :
+        d > 64 ? 'rgb(251,112,80)' :
+        d > 17 ? 'rgb(252,164,134)' :
+        d > 0 ? 'rgb(253,214,196)' :
+        'rgba(0,0,0,0.0)';
+    };
   </script>
 </body>
 </html>
