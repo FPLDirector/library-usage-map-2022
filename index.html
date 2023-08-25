@@ -725,18 +725,18 @@
       map.setMaxBounds(jeffersonCounty.getBounds());
       // Create an object with the overlay layers
       const groupedOverlays = {
-        "Jurisdictions": {
+        "<b>Jurisdictions</b>": {
           "Jefferson County": jeffersonCounty,
           "Cities and Towns": towns
         },        
-        "Each Borrower<br>by 750 m Hexagonal Grid": {
+        "<b>Each Borrower<br>by 750 m Hexagonal Grid</b>": {
           "Books Borrowed (Jefferson Co Only)": borrowerHexGrid,
           "Online Checkouts (Jefferson Co Only)": onlineHexGrid,
           "Books Borrowed (Hex Centroids)": userDataHexCentroids,
           "Online Checkouts (Hex Centroids)": onlineUserDataHexCentroids,
           "Turn Off": voidLayer
         },
-        "Borrowing Rates by Precinct": {
+        "<b>Borrowing Rates by Precinct</b>": {
           "Per Capita Books Borrowed": precinctBooks,
           "Percent Borrowers": precinctBorrowers,
           "Per Capita Online Checkouts": onlinePrecinctCheckouts,
@@ -745,7 +745,7 @@
         }
       };      
       // Add the layer control to the map
-      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Each Borrower","Each Borrower<br>by 750 m Hexagonal Grid","Borrowing Rates by Precinct"] }).addTo(map);
+      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["<b>Each Borrower</b>","<b>Each Borrower<br>by 750 m Hexagonal Grid</b>","<b>Borrowing Rates by Precinct</b>"] }).addTo(map);
       // Event listener for the overlayadd event
       map.on('overlayadd', function (eventLayer) {
         // Ensure layer order is maintained
