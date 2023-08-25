@@ -745,7 +745,7 @@
         }
       };      
       // Add the layer control to the map
-      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Each Borrower","Each Borrower<br>&nbsp;by 750 m Hexagonal Grid","Borrowing Rates by Precinct"] }).addTo(map);
+      L.control.groupedLayers(null, groupedOverlays, { position: 'topright', collapsed: false, exclusiveGroups: ["Each Borrower","Each Borrower<br>by 750 m Hexagonal Grid","Borrowing Rates by Precinct"] }).addTo(map);
       // Event listener for the overlayadd event
       map.on('overlayadd', function (eventLayer) {
         // Ensure layer order is maintained
